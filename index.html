@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive Account Faucet - Create Accounts for Your Customers</title>
+    <meta name="description" content="Create Hive accounts for your customers quickly and at no cost using our account creation service.">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>🚰 Hive Account Faucet</h1>
+                <p>Free Hive Account Creation for Business Owners</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="hero">
+                <h2>Create Hive Accounts for Your Customers</h2>
+                <p>This service allows authorized business partners to create Hive accounts using account creation tokens. Connect your authorized Hive account with Keychain, and submit requests directly to the blockchain. Our backend monitors for these requests and processes them automatically.</p>
+            </section>
+
+            <section class="request-form-section">
+                <div class="form-container">
+                    <h3>Request New Account</h3>
+                    
+                    <!-- Status Messages -->
+                    <div id="statusMessage" class="status-message hidden">
+                        <div class="status-content">
+                            <span class="status-icon"></span>
+                            <span class="status-text"></span>
+                        </div>
+                    </div>
+
+                    <!-- Keychain Connection Status -->
+                    <div id="keychainStatus" class="keychain-status hidden">
+                        <div class="keychain-content">
+                            <span class="keychain-icon"></span>
+                            <span class="keychain-text"></span>
+                        </div>
+                    </div>
+
+                    <!-- Login Section -->
+                    <div id="loginSection" class="login-section">
+                        <h3>Connect Your Hive Account</h3>
+                        <p>To use this faucet service, please connect your authorized Hive account using Keychain.</p>
+                        <button type="button" class="keychain-btn" id="connectKeychainBtn">
+                            <span class="btn-icon">🔑</span>
+                            <span class="btn-text">Connect with Keychain</span>
+                        </button>
+                        <p class="keychain-help">
+                            Don't have Keychain? <a href="https://hive-keychain.com/" target="_blank">Install Hive Keychain</a>
+                        </p>
+                    </div>
+
+                    <form id="accountRequestForm" class="account-form hidden">
+                    <form id="accountRequestForm" class="account-form hidden">
+                        <div class="connected-user">
+                            <span class="user-icon">👤</span>
+                            <span>Connected as: <strong id="connectedUsername"></strong></span>
+                            <button type="button" class="disconnect-btn" id="disconnectBtn">Disconnect</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requestedUsername">New Account Name</label>
+                            <input 
+                                type="text" 
+                                id="requestedUsername" 
+                                name="requestedUsername" 
+                                required 
+                                pattern="^[a-z0-9][a-z0-9-]{1,14}[a-z0-9]$"
+                                minlength="3"
+                                maxlength="16"
+                                placeholder="Enter desired username for new account"
+                            >
+                            <small class="field-help">Username must be 3-16 characters, lowercase letters, numbers, and hyphens only. We'll check availability automatically.</small>
+                            <div class="field-error" id="requestedUsernameError"></div>
+                            <div class="field-success" id="requestedUsernameSuccess"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deliveryMethod">Credential Delivery Method</label>
+                            <select id="deliveryMethod" name="deliveryMethod" required>
+                                <option value="email">Email to Registered Address</option>
+                                <option value="memo">Encrypted Hive Memo</option>
+                                <option value="both">Both Email and Memo</option>
+                            </select>
+                            <small class="field-help">Credentials will be sent to your registered email and/or as an encrypted memo to your Hive account.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Additional Notes (Optional)</label>
+                            <textarea 
+                                id="notes" 
+                                name="notes" 
+                                rows="3" 
+                                placeholder="Any additional information about this account (purpose, customer details, etc.)"
+                            ></textarea>
+                            <small class="field-help">Optional notes about the account purpose or any special requirements.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="termsAccepted" name="termsAccepted" required>
+                                <span class="checkmark"></span>
+                                I confirm that I am authorized to use this faucet service and will use the created account responsibly.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span class="btn-text">Broadcast Account Request</span>
+                            <span class="btn-spinner hidden">⏳</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>🔑 Authorized Access</h4>
+                        <p>Service is available to pre-authorized business partners who have been granted account creation tokens.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>⚡ Fast Processing</h4>
+                        <p>Most accounts are created within 5-10 minutes during normal network conditions.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🔒 Secure Delivery</h4>
+                        <p>Account credentials are delivered to your registered email or as encrypted memos to your Hive account.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>� Token Allocation</h4>
+                        <p>Each authorized user has a specific allocation of account creation tokens. Contact us when you need more.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Hive Account Faucet. A service for the Hive community.</p>
+            <p>
+                <a href="#about">About</a> | 
+                <a href="#privacy">Privacy</a> | 
+                <a href="#contact">Contact</a> | 
+                <a href="https://github.com/yourusername/accountfaucet" target="_blank">GitHub</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Include JavaScript files -->
+    <script src="scripts/validation.js"></script>
+    <script src="scripts/api.js"></script>
+    <script src="scripts/keychain.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>

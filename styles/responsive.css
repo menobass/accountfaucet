@@ -1,0 +1,360 @@
+/* Responsive Design for Mobile and Tablet */
+
+/* Tablet Styles (768px and below) */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .logo p {
+        font-size: 1rem;
+    }
+
+    .hero h2 {
+        font-size: 1.8rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .form-container {
+        padding: 2rem 1.5rem;
+        margin: 0 10px;
+        box-shadow: var(--shadow-light);
+    }
+
+    .form-container h3 {
+        font-size: 1.5rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-card {
+        padding: 1.5rem;
+    }
+
+    .info-card h4 {
+        font-size: 1.2rem;
+    }
+
+    .info-section {
+        margin: 3rem -15px 0;
+        padding: 2rem 0;
+    }
+}
+
+/* Mobile Styles (480px and below) */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    header {
+        padding: 1.5rem 0;
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .logo p {
+        font-size: 0.9rem;
+    }
+
+    main {
+        padding: 2rem 0;
+    }
+
+    .hero {
+        margin-bottom: 2rem;
+    }
+
+    .hero h2 {
+        font-size: 1.6rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .form-container {
+        padding: 1.5rem 1rem;
+        margin: 0 5px;
+        border-radius: var(--border-radius-small);
+    }
+
+    .form-container h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .account-form {
+        gap: 1.25rem;
+    }
+
+    .form-group {
+        gap: 0.75rem;
+    }
+
+    label {
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+        padding: 0.65rem;
+        font-size: 0.95rem;
+    }
+
+    .field-help {
+        font-size: 0.8rem;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+    }
+
+    .checkbox-label {
+        font-size: 0.9rem;
+        gap: 0.5rem;
+    }
+
+    .checkmark {
+        width: 18px;
+        height: 18px;
+    }
+
+    .submit-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        margin-top: 0.75rem;
+    }
+
+    .status-message {
+        padding: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .status-content {
+        gap: 0.4rem;
+    }
+
+    .status-icon {
+        font-size: 1.1rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .info-card {
+        padding: 1.25rem;
+    }
+
+    .info-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-card p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    footer {
+        padding: 1.5rem 0;
+        margin-top: 3rem;
+    }
+
+    footer p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra Small Mobile (360px and below) */
+@media (max-width: 360px) {
+    .container {
+        padding: 0 10px;
+    }
+
+    .logo h1 {
+        font-size: 1.6rem;
+    }
+
+    .hero h2 {
+        font-size: 1.4rem;
+    }
+
+    .form-container {
+        padding: 1.25rem 0.75rem;
+        margin: 0;
+    }
+
+    .form-container h3 {
+        font-size: 1.3rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+        padding: 0.6rem;
+    }
+
+    .submit-btn {
+        padding: 0.8rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .info-card {
+        padding: 1rem;
+    }
+
+    .info-card h4 {
+        font-size: 1rem;
+    }
+
+    .info-section {
+        margin: 2rem -10px 0;
+    }
+}
+
+/* Touch-friendly enhancements */
+@media (hover: none) and (pointer: coarse) {
+    /* Increase touch targets for mobile */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+        min-height: 44px;
+    }
+
+    .submit-btn {
+        min-height: 48px;
+    }
+
+    .checkbox-label {
+        min-height: 44px;
+        align-items: center;
+    }
+
+    .checkmark {
+        min-width: 24px;
+        min-height: 24px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure crisp borders and shadows on high DPI screens */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+        border-width: 1px;
+    }
+}
+
+/* Print styles */
+@media print {
+    header,
+    footer,
+    .info-section {
+        display: none;
+    }
+
+    .form-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .submit-btn {
+        display: none;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .btn-spinner {
+        animation: none;
+    }
+}
+
+/* Dark mode support (if system preference is dark) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #1a1a1a;
+        --bg-light: #2d2d2d;
+        --text-color: #e4e4e4;
+        --text-light: #b0b0b0;
+        --border-color: #404040;
+        --border-light: #353535;
+        --secondary-color: #e4e4e4;
+    }
+
+    .form-container {
+        background-color: var(--bg-light);
+        border-color: var(--border-color);
+    }
+
+    .info-card {
+        background-color: var(--bg-light);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    select,
+    textarea {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        border-color: var(--border-color);
+    }
+
+    .checkmark {
+        border-color: var(--border-color);
+        background-color: var(--bg-color);
+    }
+}
