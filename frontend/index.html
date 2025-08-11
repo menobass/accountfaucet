@@ -11,9 +11,19 @@
 <body>
     <header>
         <div class="container">
-            <div class="logo">
-                <h1>🚰 Hive Account Faucet</h1>
-                <p>Free Hive Account Creation for Business Owners</p>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>🚰 Hive Account Faucet</h1>
+                    <p>Free Hive Account Creation for Business Owners</p>
+                </div>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                    <span id="username" class="username"></span>
+                    <button id="logoutBtn" class="btn btn-outline">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
             </div>
         </div>
     </header>

@@ -1,387 +1,350 @@
-/**
- * Main Application Logic for Hive Account Creation Frontend
- */
+// Account Faucet App - Main Application Logic
+// Based on SnapnPay authentication pattern
 
-class HiveAccountApp {
-    constructor() {
-        this.form = null;
-        this.statusMessage = null;
-        this.submitButton = null;
-        this.isProcessing = false;
-        this.currentRequestId = null;
-        
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.init());
+// Application state
+let currentUser = null;
+let isProcessing = false;
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUI();
+    checkExistingSession();
+});
+
+// Initialize UI event listeners
+function initializeUI() {
+    // Login functionality
+    document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    
+    // Account form submission
+    document.getElementById('accountForm').addEventListener('submit', handleFormSubmit);
+    
+    // Username validation
+    document.getElementById('requestedUsername').addEventListener('input', function() {
+        clearTimeout(this.validationTimeout);
+        this.validationTimeout = setTimeout(() => {
+            checkUsernameAvailability(this.value, 'requested');
+        }, 500);
+    });
+    
+    // Delivery method change
+    document.getElementById('deliveryMethod').addEventListener('change', function() {
+        const emailGroup = document.getElementById('emailGroup');
+        if (this.value === 'email') {
+            emailGroup.style.display = 'block';
+            document.getElementById('email').required = true;
         } else {
-            this.init();
+            emailGroup.style.display = 'none';
+            document.getElementById('email').required = false;
         }
+    });
+    
+    // Enter key support for username input
+    document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    });
+}
+
+// Check for existing session
+function checkExistingSession() {
+    const storedUsername = localStorage.getItem('hive_username');
+    if (storedUsername) {
+        currentUser = storedUsername;
+        showLoggedInState();
     }
+}
 
-    /**
-     * Initialize the application
-     */
-    async init() {
-        this.setupDOMReferences();
-        this.setupEventListeners();
-        this.setupRealtimeValidation();
-        
-        // Initialize Keychain
-        await window.keychainManager.init();
-        
-        console.log('Hive Account Faucet initialized');
+// Handle login with Hive Keychain
+async function handleLogin() {
+    const username = document.getElementById('usernameInput').value.trim();
+    
+    if (!username) {
+        showStatus('Please enter a username', 'error');
+        return;
     }
-
-    /**
-     * Setup DOM element references
-     */
-    setupDOMReferences() {
-        this.form = document.getElementById('accountRequestForm');
-        this.statusMessage = document.getElementById('statusMessage');
-        this.submitButton = document.getElementById('submitBtn');
-        
-        if (!this.form || !this.statusMessage || !this.submitButton) {
-            console.error('Required DOM elements not found');
-            return;
-        }
+    
+    if (!window.hive_keychain) {
+        showStatus('Hive Keychain not found. Please install the Hive Keychain browser extension.', 'error');
+        return;
     }
-
-    /**
-     * Setup event listeners
-     */
-    setupEventListeners() {
-        if (!this.form) return;
-
-        // Form submission
-        this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
-
-        // Username availability check (debounced)
-        const requestedUsernameField = document.getElementById('requestedUsername');
+    
+    showLoading('Authenticating with Hive Keychain...');
+    
+    try {
+        // Create a buffer to sign for authentication
+        const buffer = `Login to Hive Account Faucet - ${Date.now()}`;
         
-        if (requestedUsernameField) {
-            let debounceTimeout;
-            requestedUsernameField.addEventListener('input', (e) => {
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(() => {
-                    this.checkUsernameAvailability(e.target.value, 'requested');
-                }, 1000);
-            });
-        }
-
-        // Delivery method help text
-        const deliveryMethodField = document.getElementById('deliveryMethod');
-        if (deliveryMethodField) {
-            deliveryMethodField.addEventListener('change', (e) => {
-                this.updateDeliveryMethodInfo(e.target.value);
-            });
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                e.preventDefault();
-                if (!this.isProcessing) {
-                    this.form.requestSubmit();
-                }
+        window.hive_keychain.requestSignBuffer(username, buffer, 'Posting', (response) => {
+            hideLoading();
+            
+            if (response.success) {
+                currentUser = username;
+                localStorage.setItem('hive_username', username);
+                showLoggedInState();
+                showStatus(`Successfully logged in as @${username}`, 'success');
+            } else {
+                showStatus(`Login failed: ${response.message || 'Unknown error'}`, 'error');
             }
         });
-    }
-
-    /**
-     * Setup real-time validation for form fields
-     */
-    setupRealtimeValidation() {
-        if (!window.formValidator) return;
-
-        // Setup validation for requested username only
-        window.formValidator.setupRealtimeValidation('requestedUsername', 'hiveUsername');
-    }
-
-    /**
-     * Handle form submission
-     * @param {Event} event - Form submit event
-     */
-    async handleFormSubmit(event) {
-        event.preventDefault();
-
-        if (this.isProcessing) {
-            return;
-        }
-
-        // Check Keychain connection
-        if (!window.keychainManager.isUserConnected()) {
-            this.showStatusMessage('error', 'Not Connected', 'Please connect your Keychain first.');
-            return;
-        }
-
-        // Clear previous status messages
-        this.hideStatusMessage();
-
-        // Validate form
-        const validation = window.formValidator.validateForm(this.form);
-        if (!validation.isValid) {
-            window.formValidator.displayErrors(validation.errors);
-            this.showStatusMessage('error', 'Please fix the errors below and try again.');
-            return;
-        }
-
-        // Clear any validation errors
-        window.formValidator.clearErrors();
-
-        // Get form data
-        const formData = this.getFormData();
-
-        try {
-            this.setProcessingState(true);
-            this.showStatusMessage('info', 'Broadcasting to Hive blockchain...', 'Please confirm the transaction in Keychain.');
-
-            // Submit request via Keychain custom JSON
-            const response = await window.keychainManager.submitAccountRequest(formData);
-
-            if (response.success) {
-                this.currentRequestId = response.requestId;
-                
-                let successMessage = `Transaction ID: ${response.transactionId}<br>`;
-                successMessage += `Request ID: ${response.requestId}<br>`;
-                successMessage += `${response.message}`;
-                
-                this.showStatusMessage(
-                    'success',
-                    'Request submitted to blockchain!',
-                    successMessage
-                );
-
-                // Reset form
-                this.form.reset();
-                
-            } else {
-                throw new Error(response.message || 'Failed to submit request');
-            }
-
-        } catch (error) {
-            console.error('Form submission error:', error);
-            
-            let errorMessage = error.message;
-            if (errorMessage.includes('User denied')) {
-                errorMessage = 'Transaction was cancelled by user.';
-            } else if (errorMessage.includes('Insufficient Resource Credits')) {
-                errorMessage = 'Insufficient Resource Credits to broadcast transaction.';
-            }
-            
-            this.showStatusMessage('error', 'Failed to submit request', errorMessage);
-        } finally {
-            this.setProcessingState(false);
-        }
-    }
-
-    /**
-     * Get form data as object
-     * @returns {object} - Form data
-     */
-    getFormData() {
-        const formData = new FormData(this.form);
-        const connectedUser = window.keychainManager.getConnectedUser();
         
-        return {
-            requestingUsername: connectedUser.username, // From Keychain
-            requestedUsername: formData.get('requestedUsername'),
-            deliveryMethod: formData.get('deliveryMethod'),
-            notes: formData.get('notes') || '',
-            termsAccepted: formData.get('termsAccepted')
+    } catch (error) {
+        hideLoading();
+        console.error('Login error:', error);
+        showStatus('Login failed. Please try again.', 'error');
+    }
+}
+
+// Handle logout
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('hive_username');
+    showLoggedOutState();
+    showStatus('Logged out successfully', 'info');
+}
+
+// Show logged in state
+function showLoggedInState() {
+    // Hide login section
+    document.getElementById('loginSection').style.display = 'none';
+    
+    // Show faucet section
+    document.getElementById('faucetSection').style.display = 'block';
+    
+    // Show user info in header
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('username').textContent = `@${currentUser}`;
+    
+    // Set user avatar
+    const avatarImg = document.getElementById('userAvatar');
+    avatarImg.src = `https://images.hive.blog/u/${currentUser}/avatar/small`;
+    avatarImg.onerror = function() {
+        this.src = 'https://via.placeholder.com/40/1da1f2/ffffff?text=' + currentUser.charAt(0).toUpperCase();
+    };
+}
+
+// Show logged out state
+function showLoggedOutState() {
+    // Show login section
+    document.getElementById('loginSection').style.display = 'block';
+    
+    // Hide other sections
+    document.getElementById('faucetSection').style.display = 'none';
+    
+    // Hide user info
+    document.getElementById('userInfo').style.display = 'none';
+    
+    // Reset form
+    document.getElementById('usernameInput').value = '';
+    document.getElementById('accountForm').reset();
+}
+
+// Handle form submission
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    if (isProcessing) return;
+    
+    const formData = new FormData(event.target);
+    const requestData = {
+        requestedUsername: formData.get('requestedUsername'),
+        deliveryMethod: formData.get('deliveryMethod'),
+        email: formData.get('email'),
+        notes: formData.get('notes')
+    };
+    
+    // Validate required fields
+    if (!requestData.requestedUsername) {
+        showStatus('Please enter a username for the new account', 'error');
+        return;
+    }
+    
+    if (!requestData.deliveryMethod) {
+        showStatus('Please select a credential delivery method', 'error');
+        return;
+    }
+    
+    if (requestData.deliveryMethod === 'email' && !requestData.email) {
+        showStatus('Please enter an email address', 'error');
+        return;
+    }
+    
+    // Validate username format
+    const validation = window.formValidator.validateHiveUsername(requestData.requestedUsername);
+    if (!validation.isValid) {
+        showStatus(`Username validation failed: ${validation.errors.join(', ')}`, 'error');
+        return;
+    }
+    
+    isProcessing = true;
+    document.getElementById('submitBtn').disabled = true;
+    showLoading('Broadcasting account request...');
+    
+    try {
+        // Create custom JSON for account request
+        const customJson = {
+            app: 'hive_account_faucet',
+            version: '1.0.0',
+            action: 'create_account_request',
+            data: {
+                requester: currentUser,
+                requested_username: requestData.requestedUsername,
+                delivery_method: requestData.deliveryMethod,
+                email: requestData.email || null,
+                notes: requestData.notes || null,
+                timestamp: new Date().toISOString()
+            }
         };
+        
+        // Broadcast custom JSON using Keychain
+        window.hive_keychain.requestCustomJson(
+            currentUser,
+            'hive_account_faucet',
+            'Posting',
+            JSON.stringify(customJson),
+            'Account Creation Request',
+            (response) => {
+                hideLoading();
+                isProcessing = false;
+                document.getElementById('submitBtn').disabled = false;
+                
+                if (response.success) {
+                    showStatus('Account request submitted successfully! Your request has been broadcast to the blockchain and will be processed shortly.', 'success');
+                    
+                    // Reset form after successful submission
+                    setTimeout(() => {
+                        document.getElementById('accountForm').reset();
+                        document.getElementById('emailGroup').style.display = 'none';
+                        document.getElementById('email').required = false;
+                    }, 2000);
+                } else {
+                    showStatus(`Failed to submit request: ${response.message || 'Unknown error'}`, 'error');
+                }
+            }
+        );
+        
+    } catch (error) {
+        hideLoading();
+        isProcessing = false;
+        document.getElementById('submitBtn').disabled = false;
+        console.error('Request submission error:', error);
+        showStatus('Failed to submit request. Please try again.', 'error');
     }
+}
 
+/**
+ * Check username availability
+ * @param {string} username - Username to check
+ * @param {string} type - Type of username ('requested')
+ */
+async function checkUsernameAvailability(username, type) {
+    // Only check requested username availability
+    if (type !== 'requested') return;
 
-
-    /**
-     * Check username availability
-     * @param {string} username - Username to check
-     * @param {string} type - Type of username ('requested')
-     */
-    async checkUsernameAvailability(username, type) {
-        // Only check requested username availability
-        if (type !== 'requested') return;
-
-        // First validate format
-        const validation = window.formValidator.validateHiveUsername(username);
-        
-        const usernameField = document.getElementById(`${type}Username`);
-        const errorElement = document.getElementById(`${type}UsernameError`);
-        const successElement = document.getElementById(`${type}UsernameSuccess`);
-        
-        // Clear previous messages
+    // First validate format
+    const validation = window.formValidator.validateHiveUsername(username);
+    
+    const usernameField = document.getElementById(`${type}Username`);
+    const errorElement = document.getElementById(`${type}UsernameError`);
+    const successElement = document.getElementById(`${type}UsernameSuccess`);
+    
+    // Clear previous messages
+    if (errorElement) errorElement.textContent = '';
+    if (successElement) successElement.textContent = '';
+    
+    // Show format validation errors
+    if (!validation.isValid) {
         if (errorElement) {
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-        }
-        if (successElement) {
-            successElement.textContent = '';
-            successElement.style.display = 'none';
+            errorElement.textContent = validation.errors.join(', ');
         }
         if (usernameField) {
-            usernameField.classList.remove('error');
+            usernameField.classList.add('error');
+            usernameField.classList.remove('success');
         }
-
-        // If username is empty or too short, don't check availability
-        if (!username || username.length < 3) {
-            return;
-        }
-
-        // Check format validation first
-        if (!validation.isValid) {
-            if (errorElement) {
-                errorElement.textContent = validation.message;
-                errorElement.style.display = 'block';
-                usernameField.classList.add('error');
-            }
-            return;
-        }
-
-        // Check if it's the same as connected user
-        const connectedUser = window.keychainManager?.getConnectedUser();
-        if (connectedUser && connectedUser.username && 
-            username.toLowerCase() === connectedUser.username.toLowerCase()) {
-            if (errorElement) {
-                errorElement.textContent = 'The new account name cannot be the same as your connected username.';
-                errorElement.style.display = 'block';
-                usernameField.classList.add('error');
-            }
-            return;
-        }
-        
-        // Check availability on Hive blockchain
-        await this.checkHiveAccountAvailability(username, usernameField, errorElement, successElement);
+        return;
     }
-
-    /**
-     * Check if account name is available on Hive blockchain
-     * @param {string} username - Username to check
-     * @param {HTMLElement} field - Input field element
-     * @param {HTMLElement} errorElement - Error message element
-     * @param {HTMLElement} successElement - Success message element
-     */
-    async checkHiveAccountAvailability(username, field, errorElement, successElement) {
-        try {
-            // Add loading indicator
-            if (successElement) {
-                successElement.textContent = '⏳ Checking availability on Hive blockchain...';
-                successElement.style.display = 'block';
-                successElement.style.color = 'var(--text-light)';
-            }
-
-            // Use the API client to check account availability
-            const availability = await window.apiClient.checkAccountAvailability(username);
-            
-            if (!availability.available) {
-                if (errorElement) {
-                    errorElement.textContent = 'This username is already taken on Hive.';
-                    errorElement.style.display = 'block';
-                    field.classList.add('error');
-                }
+    
+    // Check availability on blockchain
+    try {
+        const isAvailable = await window.apiClient.checkAccountAvailability(username);
+        
+        if (usernameField) {
+            if (isAvailable) {
+                usernameField.classList.remove('error');
+                usernameField.classList.add('success');
                 if (successElement) {
-                    successElement.style.display = 'none';
+                    successElement.textContent = `✓ Username "${username}" is available`;
                 }
             } else {
-                if (successElement) {
-                    successElement.textContent = '✓ Username is available on Hive!';
-                    successElement.style.display = 'block';
-                    successElement.style.color = 'var(--success-color)';
+                usernameField.classList.add('error');
+                usernameField.classList.remove('success');
+                if (errorElement) {
+                    errorElement.textContent = `Username "${username}" is already taken`;
                 }
             }
-        } catch (error) {
-            console.warn('Availability check failed:', error);
-            if (successElement) {
-                successElement.textContent = '⚠️ Could not check availability - please verify manually';
-                successElement.style.color = 'var(--warning-color)';
-                successElement.style.display = 'block';
-            }
         }
-    }
-
-    /**
-     * Update delivery method information
-     * @param {string} method - Selected delivery method
-     */
-    updateDeliveryMethodInfo(method) {
-        const infoTexts = {
-            email: 'Account credentials will be sent to your registered email address.',
-            memo: 'Account credentials will be sent as an encrypted memo to your Hive account.',
-            both: 'Account credentials will be sent via both your registered email and encrypted Hive memo for redundancy.'
-        };
-
-        // You could add a help text element to show this information
-        console.log(`Delivery method selected: ${method} - ${infoTexts[method]}`);
-    }
-
-    /**
-     * Set processing state
-     * @param {boolean} processing - Whether form is processing
-     */
-    setProcessingState(processing) {
-        this.isProcessing = processing;
-
-        if (!this.submitButton) return;
-
-        const btnText = this.submitButton.querySelector('.btn-text');
-        const btnSpinner = this.submitButton.querySelector('.btn-spinner');
-
-        if (processing) {
-            this.submitButton.disabled = true;
-            if (btnText) btnText.classList.add('hidden');
-            if (btnSpinner) btnSpinner.classList.remove('hidden');
-        } else {
-            this.submitButton.disabled = false;
-            if (btnText) btnText.classList.remove('hidden');
-            if (btnSpinner) btnSpinner.classList.add('hidden');
+    } catch (error) {
+        console.error('Error checking username availability:', error);
+        if (errorElement) {
+            errorElement.textContent = 'Unable to check username availability. Please try again.';
         }
-    }
-
-    /**
-     * Show status message
-     * @param {string} type - Message type (success, error, info, warning)
-     * @param {string} title - Message title
-     * @param {string} description - Optional description
-     */
-    showStatusMessage(type, title, description = '') {
-        if (!this.statusMessage) return;
-
-        const statusContent = this.statusMessage.querySelector('.status-content');
-        const statusIcon = this.statusMessage.querySelector('.status-icon');
-        const statusText = this.statusMessage.querySelector('.status-text');
-
-        if (!statusContent || !statusIcon || !statusText) return;
-
-        // Set message content
-        statusText.innerHTML = description 
-            ? `<strong>${title}</strong><br>${description}`
-            : `<strong>${title}</strong>`;
-
-        // Set icon based on type
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        statusIcon.textContent = icons[type] || icons.info;
-
-        // Set CSS classes
-        this.statusMessage.className = `status-message ${type}`;
-        this.statusMessage.classList.remove('hidden');
-
-        // Scroll to status message
-        this.statusMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    /**
-     * Hide status message
-     */
-    hideStatusMessage() {
-        if (this.statusMessage) {
-            this.statusMessage.classList.add('hidden');
+        if (usernameField) {
+            usernameField.classList.add('error');
+            usernameField.classList.remove('success');
         }
     }
 }
 
-// Initialize the application
-window.hiveAccountApp = new HiveAccountApp();
+// Show status message
+function showStatus(message, type = 'info') {
+    const statusContent = document.getElementById('statusContent');
+    const statusClass = `status-${type}`;
+    
+    const iconMap = {
+        info: 'fas fa-info-circle',
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle'
+    };
+    
+    statusContent.innerHTML = `
+        <div class="status-message ${statusClass}">
+            <i class="${iconMap[type] || iconMap.info}"></i>
+            ${message}
+        </div>
+    `;
+    
+    // Auto-clear success messages after 5 seconds
+    if (type === 'success') {
+        setTimeout(() => {
+            if (statusContent.innerHTML.includes(message)) {
+                statusContent.innerHTML = '<p class="text-muted">Ready for next action...</p>';
+            }
+        }, 5000);
+    }
+}
+
+// Show loading overlay
+function showLoading(message = 'Loading...') {
+    document.getElementById('loadingText').textContent = message;
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+// Hide loading overlay
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// Error handler for uncaught errors
+window.addEventListener('error', function(event) {
+    console.error('Uncaught error:', event.error);
+    showStatus('An unexpected error occurred. Please refresh the page.', 'error');
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    showStatus('An unexpected error occurred. Please refresh the page.', 'error');
+});
