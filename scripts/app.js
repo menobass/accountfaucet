@@ -31,6 +31,7 @@ function initializeUI() {
     // Delivery method change - No longer need email input handling
     document.getElementById('deliveryMethod').addEventListener('change', function() {
         // Email is now sent to registered address only, no input field needed
+        updateSubmitButtonState();
     });
     
     // Enter key support for username input
@@ -39,6 +40,9 @@ function initializeUI() {
             handleLogin();
         }
     });
+    
+    // Initialize submit button as disabled
+    updateSubmitButtonState();
 }
 
 // Check for existing session
@@ -209,7 +213,12 @@ async function handleFormSubmit(event) {
                     // Reset form after successful submission
                     setTimeout(() => {
                         document.getElementById('accountForm').reset();
-                        // No longer need to hide email group since it's removed
+                        // Clear username validation classes and reset submit button
+                        const usernameField = document.getElementById('requestedUsername');
+                        if (usernameField) {
+                            usernameField.classList.remove('success', 'error');
+                        }
+                        updateSubmitButtonState();
                     }, 2000);
                 } else {
                     showStatus(`Failed to submit request: ${response.message || 'Unknown error'}`, 'error');
@@ -260,7 +269,8 @@ async function checkUsernameAvailability(username, type) {
     
     // Check availability on blockchain
     try {
-        const isAvailable = await window.apiClient.checkAccountAvailability(username);
+        const result = await window.apiClient.checkAccountAvailability(username);
+        const isAvailable = result.available;
         
         if (usernameField) {
             if (isAvailable) {
@@ -269,12 +279,16 @@ async function checkUsernameAvailability(username, type) {
                 if (successElement) {
                     successElement.textContent = `✓ Username "${username}" is available`;
                 }
+                // Enable submit button when username is available
+                updateSubmitButtonState();
             } else {
                 usernameField.classList.add('error');
                 usernameField.classList.remove('success');
                 if (errorElement) {
                     errorElement.textContent = `Username "${username}" is already taken`;
                 }
+                // Disable submit button when username is taken
+                updateSubmitButtonState();
             }
         }
     } catch (error) {
@@ -286,6 +300,8 @@ async function checkUsernameAvailability(username, type) {
             usernameField.classList.add('error');
             usernameField.classList.remove('success');
         }
+        // Disable submit button when there's an error checking availability
+        updateSubmitButtonState();
     }
 }
 
@@ -322,6 +338,35 @@ function showStatus(message, type = 'info') {
 function showLoading(message = 'Loading...') {
     document.getElementById('loadingText').textContent = message;
     document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+/**
+ * Update submit button state based on form validation
+ */
+function updateSubmitButtonState() {
+    const submitBtn = document.getElementById('submitBtn');
+    const requestedUsernameField = document.getElementById('requestedUsername');
+    const deliveryMethodField = document.getElementById('deliveryMethod');
+    
+    if (!submitBtn || !requestedUsernameField || !deliveryMethodField) return;
+    
+    // Check if username field has success class (meaning it's available)
+    const usernameIsAvailable = requestedUsernameField.classList.contains('success');
+    const usernameHasValue = requestedUsernameField.value.trim().length > 0;
+    const deliveryMethodSelected = deliveryMethodField.value.trim().length > 0;
+    
+    // Enable button only if username is available and delivery method is selected
+    const shouldEnable = usernameIsAvailable && usernameHasValue && deliveryMethodSelected;
+    
+    submitBtn.disabled = !shouldEnable;
+    
+    if (!shouldEnable) {
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
 }
 
 // Hide loading overlay
