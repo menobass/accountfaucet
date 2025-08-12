@@ -28,16 +28,9 @@ function initializeUI() {
         }, 500);
     });
     
-    // Delivery method change
+    // Delivery method change - No longer need email input handling
     document.getElementById('deliveryMethod').addEventListener('change', function() {
-        const emailGroup = document.getElementById('emailGroup');
-        if (this.value === 'email') {
-            emailGroup.style.display = 'block';
-            document.getElementById('email').required = true;
-        } else {
-            emailGroup.style.display = 'none';
-            document.getElementById('email').required = false;
-        }
+        // Email is now sent to registered address only, no input field needed
     });
     
     // Enter key support for username input
@@ -216,8 +209,7 @@ async function handleFormSubmit(event) {
                     // Reset form after successful submission
                     setTimeout(() => {
                         document.getElementById('accountForm').reset();
-                        document.getElementById('emailGroup').style.display = 'none';
-                        document.getElementById('email').required = false;
+                        // No longer need to hide email group since it's removed
                     }, 2000);
                 } else {
                     showStatus(`Failed to submit request: ${response.message || 'Unknown error'}`, 'error');
