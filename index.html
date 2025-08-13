@@ -1,29 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting… | Hive Account Faucet</title>
-    <meta http-equiv="refresh" content="0; url=frontend/index.html" />
-    <link rel="canonical" href="frontend/index.html" />
-    <style>
-        body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0d1117;color:#c9d1d9}
-        .box{max-width:480px;padding:2rem;text-align:center;background:#161b22;border:1px solid #30363d;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.4)}
-        h1{font-size:1.4rem;margin:0 0 .75rem}
-        a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
-        code{background:#21262d;padding:.25rem .5rem;border-radius:6px;font-size:.85rem}
-    </style>
-    <script>
-        // JS fallback redirect (in case meta refresh blocked)
-        window.location.replace('frontend/index.html');
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https: wss:; media-src 'self' https:;">
+    <title>Hive Account Faucet - Free Account Creation</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="box">
-        <h1>Redirecting to the Faucet UI…</h1>
-        <p>The main interface now lives under <code>/frontend/</code>.</p>
-        <p>If you are not redirected automatically, <a href="frontend/index.html">click here</a>.</p>
-        <p style="margin-top:1.25rem;font-size:.8rem;opacity:.7">This lightweight redirect page replaces an outdated duplicate UI.</p>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <i class="fas fa-faucet"></i>
+                    Hive Account Faucet
+                </h1>
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+                    <span id="username" class="username"></span>
+                    <button id="logoutBtn" class="btn btn-outline">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Login Section -->
+            <section id="loginSection" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-key"></i>
+                            Login with Hive Keychain
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Enter your Hive username to access the account creation faucet</p>
+                        <div class="form-group">
+                            <label for="usernameInput">Hive Username:</label>
+                            <input type="text" id="usernameInput" class="form-control" placeholder="Enter Hive username" autocomplete="username">
+                        </div>
+                        <button id="loginBtn" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </button>
+                        <p class="keychain-help">
+                            Don't have Keychain? <a href="https://hive-keychain.com/" target="_blank">Install Hive Keychain</a>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Creation Form Section -->
+            <section id="faucetSection" class="section" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-user-plus"></i>
+                            Create Hive Account
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Submit a request to create a new Hive account for your customer</p>
+                        <form id="accountForm">
+                            <div class="form-group">
+                                <label for="requestedUsername">
+                                    Requested Username <span class="required">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="requestedUsername" 
+                                    name="requestedUsername"
+                                    class="form-control" 
+                                    placeholder="Enter desired username"
+                                    pattern="^[a-z0-9][a-z0-9-]{1,14}[a-z0-9]$"
+                                    minlength="3"
+                                    maxlength="16"
+                                    required
+                                >
+                                <small class="form-text">Username must be 3-16 characters, lowercase letters, numbers, and hyphens only</small>
+                                <div class="error-message" id="requestedUsernameError"></div>
+                                <div class="success-message" id="requestedUsernameSuccess"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deliveryMethod">
+                                    Credential Delivery Method <span class="required">*</span>
+                                </label>
+                                <select id="deliveryMethod" name="deliveryMethod" class="form-control" required>
+                                    <option value="">Select delivery method</option>
+                                    <option value="email">Email (registered)</option>
+                                    <option value="hive_memo">Encrypted Hive Memo</option>
+                                    <option value="both">Both Email + Memo</option>
+                                </select>
+                                <small class="field-help">
+                                    Choose how credentials are delivered. Email uses your registered address; encrypted memo costs 0.001 HBD for transfer.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="notes">Additional Notes</label>
+                                <textarea 
+                                    id="notes" 
+                                    name="notes"
+                                    class="form-control" 
+                                    rows="3"
+                                    placeholder="Any additional information or special requests (optional)"
+                                ></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Status Section -->
+            <section id="statusSection" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-info-circle"></i>
+                            Status
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusContent" class="status-content">
+                            <p class="text-muted">Ready to start...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Section -->
+            <section id="infoSection" class="section">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4><i class="fas fa-key"></i> Authorized Access</h4>
+                        <p>Service is available to pre-authorized business partners who have been granted account creation tokens.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4><i class="fas fa-bolt"></i> Fast Processing</h4>
+                        <p>Most accounts are created within 5-10 minutes during normal network conditions.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4><i class="fas fa-shield-alt"></i> Secure Delivery</h4>
+                        <p>Account credentials are delivered to your registered email or as encrypted memos to your Hive account.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4><i class="fas fa-coins"></i> Token Allocation</h4>
+                        <p>Each authorized user has a specific allocation of account creation tokens. Contact us when you need more.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Hive Account Faucet. A service for the Hive community.</p>
+        </footer>
     </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loadingText">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/validation.js"></script>
+    <script src="scripts/api.js"></script>
+    <script src="scripts/keychain.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>
