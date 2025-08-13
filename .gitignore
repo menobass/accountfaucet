@@ -49,3 +49,4 @@ backend/test-memo-fix.js
 # Consolidated local-only memo test (developer machine)
 backend/tests/memo-test.js
 backend/data/authorized_users.json
+.env.sanitized-info
