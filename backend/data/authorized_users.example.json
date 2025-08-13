@@ -1,0 +1,21 @@
+{
+  "authorized_users": {
+    "exampleuser": {
+      "tokens_allocated": 5,
+      "tokens_used": 0,
+      "tokens_remaining": 5,
+      "email": "owner@example.com",
+      "created_at": "2025-01-01T00:00:00.000Z",
+      "last_used": null,
+      "is_active": true,
+      "notes": "Sample entry - replace with real authorized sponsors"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-01-01T00:00:00.000Z",
+    "last_updated": "2025-01-01T00:00:00.000Z",
+    "total_users": 1,
+    "total_tokens_allocated": 5,
+    "total_tokens_used": 0
+  }
+}

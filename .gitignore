@@ -34,3 +34,18 @@ logs
 # Backend build artifacts (when we create backend)
 backend/dist/
 backend/build/
+
+# Sensitive runtime data (credentials & state)
+backend/data/pending_credentials.json
+backend/data/last_block.json
+backend/data/*.bak
+backend/tests/email-test.js
+# Temporary / emergency or local-only scripts (should never be committed)
+backend/recover-credentials.js
+backend/test-memo-encryption.js
+backend/test-memo-correct.js
+backend/test-encryption-fix.js
+backend/test-memo-fix.js
+# Consolidated local-only memo test (developer machine)
+backend/tests/memo-test.js
+backend/data/authorized_users.json

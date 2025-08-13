@@ -24,8 +24,8 @@ The system is split into two main components:
 - **Location**: `/frontend/` directory
 
 ### Backend (Node.js Service)
-- **Technology**: Node.js, Express, @hiveio/dhive
-- **Purpose**: Process requests and interact with Hive blockchain
+- **Technology**: Node.js, Express, @hiveio/dhive, @hiveio/hive-js (encrypted memos)
+- **Purpose**: Stream blocks, detect signed custom_json requests, create accounts using ACTs, deliver credentials (email / encrypted memo / both)
 - **Location**: `/backend/` directory
 
 ## 🚀 Quick Start
@@ -90,34 +90,43 @@ accountfaucet/
 - ♿ **Accessibility** compliant (WCAG)
 
 ### Account Creation
-- 🆓 **Free service** using account creation tokens
-- ⚡ **Fast processing** (5-10 minutes typical)
-- 🔒 **Secure key generation** for new accounts
-- 📧 **Email delivery** of credentials
-- 💬 **Encrypted memo** option for delivery
-- 🔄 **Request queuing** and management
+- 🆓 **Free service** using Account Creation Tokens (ACTs)
+- 🔑 **Deterministic key derivation** from secure master password
+- 📧 **Email delivery** (registered sponsor email)
+- 💬 **Encrypted memo** (0.001 HBD transfer with # encrypted memo)
+- 🔄 **Recovery safety** (credentials stored until successful delivery)
+- ✅ **Dual-mode delivery** ("both" enforces both paths succeed)
 
-### Security
-- 🛡️ **Input validation** and sanitization
-- 🔑 **Secure key management** for creator accounts
-- 🚦 **Rate limiting** to prevent abuse
-- 📊 **Audit logging** of all operations
-- 🔐 **HTTPS only** communication
+### Security (Current)
+- 🛡️ Input validation (structure & required fields)
+- 🔑 Creator keys only in `.env` (gitignored)
+- � Encrypted memo via hive-js (# prefix + plaintext sanity check)
+- 📝 Pending credential store prevents loss on delivery failure
+- ♻️ Block height persistence for crash resilience
+### Security (Planned)
+- 🚦 Rate limiting & API key auth
+- 📊 Structured logging / metrics
+- 🧪 Additional input sanitization layers
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Core Environment Variables (see `backend/.env.example`)
 ```bash
-# Backend configuration
-HIVE_CREATOR_ACCOUNT=your-creator-account
-HIVE_CREATOR_ACTIVE_KEY=your-active-key
-EMAIL_SERVICE_API_KEY=your-email-api-key
-API_AUTH_KEY=your-api-auth-key
-HIVE_RPC_ENDPOINTS=https://api.hive.blog,https://api.hivekings.com
-
-# Optional
+CREATING_ACCOUNT_USERNAME=yourfaucet
+CREATING_ACCOUNT_ACTIVE_KEY=5XXXXXXXXXXXXXXXX
+CREATING_ACCOUNT_POSTING_KEY=5XXXXXXXXXXXXXXXX
+CREATING_ACCOUNT_MEMO_KEY=5XXXXXXXXXXXXXXXX
+HIVE_NODE_URL=https://api.hive.blog
+BLOCK_SAVE_INTERVAL=20
 PORT=3000
-NODE_ENV=production
+
+# Email (optional if only using memos)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_SECURE=true
+EMAIL_USER=youraddress@gmail.com
+EMAIL_PASS=app_password
+EMAIL_FROM="Hive Faucet <youraddress@gmail.com>"
 ```
 
 ### Frontend Configuration
@@ -292,18 +301,21 @@ This project is open source and available under the [MIT License](LICENSE).
 - [x] API client setup
 - [x] Project structure
 
-### Phase 2: Backend Development 🚧
-- [ ] Node.js server setup
-- [ ] Hive blockchain integration
-- [ ] Account creation service
-- [ ] Email notification system
-- [ ] API endpoints implementation
+### Phase 2: Backend Development ✅
+- [x] Node.js server setup
+- [x] Hive blockchain integration (stream + filter)
+- [x] ACT-based account creation
+- [x] Email notification system
+- [x] Encrypted memo delivery
+- [x] Token authorization / usage tracking
+- [x] Resume from persisted block
+- [x] Recovery store for pending credentials
 
-### Phase 3: Integration & Testing 📋
-- [ ] Frontend-backend integration
-- [ ] End-to-end testing
-- [ ] Security testing
-- [ ] Performance optimization
+### Phase 3: Integration & Testing �
+- [x] Frontend-backend integration
+- [ ] Expanded automated tests
+- [ ] Security hardening tests
+- [ ] Performance / load profiling
 
 ### Phase 4: Deployment & Launch 🚀
 - [ ] Production deployment
@@ -313,10 +325,11 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ### Future Enhancements 🔮
 - [ ] Batch account creation
-- [ ] Account recovery assistance
-- [ ] Integration with popular business tools
-- [ ] Analytics dashboard
-- [ ] Multi-language support
+- [ ] Automatic stale pending cleanup + alerting
+- [ ] Rate limiting & abuse detection
+- [ ] Analytics dashboard / metrics endpoint
+- [ ] Multi-language UI
+- [ ] Optional database persistence
 
 ---
 
