@@ -61,23 +61,26 @@ python -m http.server 8000
 
 ```
 accountfaucet/
-├── frontend/                 # Static website
-│   ├── index.html           # Main request form
-│   ├── styles/              # CSS files
-│   ├── scripts/             # JavaScript modules
-│   └── README.md            # Frontend documentation
-├── backend/                 # Node.js API service
-│   ├── server.js            # Main server file
-│   ├── routes/              # API routes
-│   ├── services/            # Business logic
-│   ├── middleware/          # Express middleware
-│   ├── config/              # Configuration files
-│   └── README.md            # Backend documentation
-├── docs/                    # Project documentation
-│   └── PROJECT_PLAN.md      # Detailed project plan
-├── .github/                 # GitHub configuration
-│   └── copilot-instructions.md
-└── README.md                # This file
+├── frontend/                 # Static website (HTML/CSS/JS)
+│   ├── index.html
+│   ├── scripts/
+│   ├── styles/
+│   └── README.md
+├── backend/                  # Node.js service
+│   ├── server.js             # Entry
+│   ├── services/             # Blockchain monitor, email, user manager
+│   ├── data/                 # Runtime JSON stores (gitignored except *.example)
+│   ├── tests/                # Example test stubs
+│   └── README.md
+├── docs/                     # Documentation (plans, deployment)
+│   ├── PROJECT_PLAN.md
+│   └── DEPLOYMENT.md
+├── scripts/                  # (Legacy) shared scripts (to consolidate)
+├── styles/                   # (Legacy) shared styles (to consolidate)
+├── PROJECT_STATUS.md
+├── CHANGELOG.md
+├── LICENSE
+└── README.md
 ```
 
 ## 🎨 Features
@@ -311,7 +314,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - [x] Resume from persisted block
 - [x] Recovery store for pending credentials
 
-### Phase 3: Integration & Testing �
+### Phase 3: Integration & Testing (in progress)
 - [x] Frontend-backend integration
 - [ ] Expanded automated tests
 - [ ] Security hardening tests
@@ -334,3 +337,6 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 **Made with ❤️ for the Hive community**
+
+---
+See CHANGELOG.md for version history.
