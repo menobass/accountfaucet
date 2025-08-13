@@ -304,13 +304,13 @@ class HiveAccountApp {
      */
     updateDeliveryMethodInfo(method) {
         const infoTexts = {
-            email: 'Account credentials will be sent to your registered email address.',
-            memo: 'Account credentials will be sent as an encrypted memo to your Hive account.',
-            both: 'Account credentials will be sent via both your registered email and encrypted Hive memo for redundancy.'
+            email: 'Credentials will be sent to your registered email (no need to enter it).',
+            hive_memo: 'Credentials will be sent as an encrypted on-chain memo (costs 0.001 HBD).',
+            both: 'Credentials will be delivered by registered email AND encrypted memo.'
         };
 
         // You could add a help text element to show this information
-        console.log(`Delivery method selected: ${method} - ${infoTexts[method]}`);
+    console.log(`Delivery method selected: ${method} - ${infoTexts[method] || ''}`);
     }
 
     /**

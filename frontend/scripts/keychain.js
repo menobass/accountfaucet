@@ -184,16 +184,17 @@ class KeychainManager {
      * Create account request custom JSON
      */
     createAccountRequestJson(requestedUsername, deliveryMethod, notes = '') {
+        // Map legacy memo value to backend expected hive_memo
+        const normalizedDelivery = deliveryMethod === 'memo' ? 'hive_memo' : deliveryMethod;
         return {
-            app: 'hive-account-faucet',
+            app: 'hive_account_faucet',
             version: '1.0.0',
             action: 'create_account_request',
-            timestamp: new Date().toISOString(),
-            requestId: this.generateRequestId(),
             data: {
-                requestedUsername: requestedUsername,
-                deliveryMethod: deliveryMethod,
-                notes: notes
+                requested_username: requestedUsername,
+                delivery_method: normalizedDelivery,
+                notes: notes || '',
+                timestamp: new Date().toISOString()
             }
         };
     }

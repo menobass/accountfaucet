@@ -69,7 +69,6 @@
                     </div>
 
                     <form id="accountRequestForm" class="account-form hidden">
-                    <form id="accountRequestForm" class="account-form hidden">
                         <div class="connected-user">
                             <span class="user-icon">👤</span>
                             <span>Connected as: <strong id="connectedUsername"></strong></span>
@@ -96,11 +95,11 @@
                         <div class="form-group">
                             <label for="deliveryMethod">Credential Delivery Method</label>
                             <select id="deliveryMethod" name="deliveryMethod" required>
-                                <option value="email">Email to Registered Address</option>
-                                <option value="memo">Encrypted Hive Memo</option>
-                                <option value="both">Both Email and Memo</option>
+                                <option value="email">Email (to your registered address)</option>
+                                <option value="hive_memo">Encrypted Hive Memo</option>
+                                <option value="both">Both Email + Memo</option>
                             </select>
-                            <small class="field-help">Credentials will be sent to your registered email and/or as an encrypted memo to your Hive account.</small>
+                            <small class="field-help">No email entry needed: we use the one on file. Choose memo for on-chain encrypted delivery or both for redundancy.</small>
                         </div>
 
                         <div class="form-group">
