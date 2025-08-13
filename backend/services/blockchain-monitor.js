@@ -380,7 +380,10 @@ class BlockchainMonitor {
 
         let emailResult = { success: false };
         let memoResult = { success: false };
-        const requesterEmail = authCheck.user_info?.email || null;
+        // Avoid optional chaining for older Node versions
+        const requesterEmail = (authCheck.user_info && authCheck.user_info.email)
+            ? authCheck.user_info.email
+            : null;
 
         // EMAIL
         if (deliveryMethod === 'email' || deliveryMethod === 'both') {
